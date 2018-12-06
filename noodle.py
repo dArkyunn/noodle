@@ -33,26 +33,26 @@ def doJob(cmdType, args):
 
 def writeToConfig(args):
     checkConfig()
-    with open('./hosts.json', 'r') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
         config = json.load(data_file)
     if args[2] in config:
         print('  Element with that name already exists')
         return
     config[args[2]] = [{"name":args[2], "server":args[3]}]
-    with open('./hosts.json', 'w') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w') as data_file:
         json.dump(config, data_file)
     print('  Added new entry with the name: ' + args[2])
 
 def removeFromConfig(args):
     checkConfig()
-    with open('./hosts.json', 'r') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
         config = json.load(data_file)
     if args[2] in config:
         config.pop(args[2], None)
     else:
         print('  Element with that name doesn\'t exist')
         return
-    with open('./hosts.json', 'w') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w') as data_file:
         json.dump(config, data_file)
     print('  Removed config entry with the name: ' + args[2])
 
@@ -63,7 +63,7 @@ def listOutConfig(args):
         ['', '', '']
     ]
     index = 1
-    with open('./hosts.json', 'r') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
         config = json.load(data_file)
     if len(config) > 0:
         for el in config:
@@ -77,7 +77,7 @@ def listOutConfig(args):
 
 def readFromConfig():
     checkConfig()
-    with open('./hosts.json', 'r') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
         config = json.load(data_file)
     return config
 
@@ -138,13 +138,13 @@ def parseArguments(argument, args):
     return statement.get(argument, 999)
 
 def checkConfig():
-    if not os.path.isfile('./hosts.json'):
-        f = open('./hosts.json', 'w+')
+    if not os.path.isfile(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json')):
+        f = open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w+')
         f.write('{}')
         f.close()
         return
-    if not os.stat('./hosts.json').st_size > 1:
-        f = open('./hosts.json', 'w+')
+    if not os.stat(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json')).st_size > 1:
+        f = open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w+')
         f.write('{}')
         f.close()
         return
@@ -152,7 +152,7 @@ def checkConfig():
 def getConfig():
     checkConfig()
     conf = list()
-    with open('./hosts.json', 'r') as data_file:
+    with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
         config = json.load(data_file)
     for elem in config:
         el = config[elem]
@@ -165,12 +165,12 @@ def editConfigEntry(args):
         print('  Enter new name for the element [' + args[2] + ']: ', end='')
         newName = input()
         newName = newName or args[2]
-        print('  Enter new server for the element [none]: ', end='\n')
+        print('  Enter new server for the element [none]: ', end='')
         newServer = input()
         newServer = newServer or ''
         config.pop(args[2], None)
         config[newName] = [{"name": newName, "server": newServer}]
-        with open('./hosts.json', 'w') as data_file:
+        with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w') as data_file:
             json.dump(config, data_file)
         print('  Edited the entry')
 
@@ -179,7 +179,7 @@ def connectToServer(config, args):
         if server['name'] == args[2]:
             name = server['server']
             print('  Trying to resolve SSH Connection to ' + name, end='\n\n  ')
-    spawn_process(parse_program_path('ssh '+name))
+    spawn_process(parse_program_path('ssh ' + name))
                 
 def main():
     arguments = getArguments()
@@ -190,3 +190,4 @@ if __name__ == '__main__':
     print('\nNoodle ssh manager\n')
     main()
     print('\nEnd of Noodle output', end='\n\n')
+    
