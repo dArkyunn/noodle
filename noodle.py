@@ -12,13 +12,12 @@ def getArguments():
         for el in argv:
             args.append(el)
     else:
-        print('  Usage:\n  noodle [option] <arg1> <arg2> <argN>\n') # change to a help call
-        exit(3)
+        printHelp()
     return args
 
 def doJob(cmdType, args):
     if cmdType == 999:
-        print('  Usage:\n  noodle [option] <arg1> <arg2> <argN>')
+        printHelp()
     if cmdType == 1:
         writeToConfig()
     if cmdType == 2:
@@ -134,6 +133,9 @@ def parseArguments(argument, args):
         else:
             return 999
 
+    def help():
+        return 999
+
     statement = {
         'add': add(),
         'a': add(),
@@ -146,7 +148,9 @@ def parseArguments(argument, args):
         'e': edit(),
         'connect': connect(),
         'con': connect(),
-        'c': connect()
+        'c': connect(),
+        'help': help(),
+        'h': help()
     }
     return statement.get(argument, 999)
 
@@ -216,6 +220,26 @@ def connectToServer(config, args):
             port = server['port']
             print('  Trying to resolve SSH connection to ' + serv, end='\n\n  ')
     spawn_process(parse_program_path('ssh' + ' -l ' + login + ' -p ' + port + ' ' + serv))
+
+def printHelp():
+    print('  Usage:')
+    print('    General form: noodle [option] <arguments>')
+    print()
+    print('    Options:')
+    print('      help, h - no arguments, shows this page')
+    print('      add, a - no arguments, prompts the user to add a new entry into the config')
+    print('      delete, del, d - one argument: <name> of an entry present in config, removes an entry from the config')
+    print('      edit, e - one argument: <name> of an entry present in config, prompts the user to enter new values for an entry')
+    print('      list, l - no arguments, lists out all entries in the config')
+    print('      connect, con, c - one argument: <name> of an entry present in config, connects to a server')
+    print()
+    print('    Example usage:')
+    print('      noodle add')
+    print('      noodle delete example')
+    print('      noodle edit example')
+    print('      noodle list')
+    print('      noodle connect example')
+    exit()
                 
 def main():
     arguments = getArguments()
