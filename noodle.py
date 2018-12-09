@@ -20,7 +20,7 @@ def doJob(cmdType, args):
     if cmdType == 999:
         print('  Usage:\n  noodle [option] <arg1> <arg2> <argN>')
     if cmdType == 1:
-        writeToConfig(args)
+        writeToConfig()
     if cmdType == 2:
         removeFromConfig(args)
     if cmdType == 3:
@@ -31,17 +31,30 @@ def doJob(cmdType, args):
         conf = getConfig()
         connectToServer(conf, args)
 
-def writeToConfig(args):
+def writeToConfig():
     checkConfig()
     with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
         config = json.load(data_file)
-    if args[2] in config:
-        print('  Element with that name already exists')
-        return
-    config[args[2]] = [{"name":args[2], "server":args[3]}]
+    name = ''
+    server = ''
+    login = ''
+    port = ''
+    while len(name) < 1 or name in config:
+        print('  Enter a name for the entry: ', end='')
+        name = input()
+    while len(server) < 4:
+        print('  Enter IP address or domain: ', end='')
+        server = input()
+    print("  Enter login (default 'root'): ", end='')
+    login = input()
+    login = server or 'root'
+    print("  Enter port (default '22'): ", end='')
+    port = input()
+    port = port or '22'
+    config[name] = [{"name":name, "server":server, "login":login, "port":port}]
     with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w') as data_file:
         json.dump(config, data_file)
-    print('  Added new entry with the name: ' + args[2])
+    print('  Added new entry with the name: ' + name)
 
 def removeFromConfig(args):
     checkConfig()
@@ -59,8 +72,8 @@ def removeFromConfig(args):
 def listOutConfig(args):
     checkConfig()
     table = [
-        ['', 'Name', 'Server'],
-        ['', '', '']
+        ['', 'Name', 'Server', 'Login', 'Port'],
+        ['', '', '', '', '']
     ]
     index = 1
     with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'r') as data_file:
@@ -69,7 +82,7 @@ def listOutConfig(args):
         for el in config:
             name = config[el]
             for servers in name:
-                table.append([str(index) + '.', servers['name'], servers['server']])
+                table.append([str(index) + '.', servers['name'], servers['server'], servers['login'], servers['port']])
                 index += 1
         print_table(table)
     else:
@@ -92,7 +105,7 @@ def print_table(table):
 
 def parseArguments(argument, args):
     def add():
-        if len(args) == 4:
+        if len(args) > 1:
             return 1
         else:
             return 999
@@ -138,15 +151,23 @@ def parseArguments(argument, args):
     return statement.get(argument, 999)
 
 def checkConfig():
+    if not os.path.isdir(os.path.join(os.path.expanduser('~'), '.config', 'noodle')):
+        print('  No configuration directory detected, creating...')
+        os.makedirs(os.path.join(os.path.expanduser('~'), '.config', 'noodle'))
+        print('  Created configuration directory in: ' + os.path.join(os.path.expanduser('~'), '.config', 'noodle'))
     if not os.path.isfile(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json')):
+        print('  No configuration file found, creating...')
         f = open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w+')
         f.write('{}')
         f.close()
+        print('  Created configuration file in: ' + os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'))
         return
     if not os.stat(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json')).st_size > 1:
+        print('  Detected invalid content of configuration file, recreating...')
         f = open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w+')
         f.write('{}')
         f.close()
+        print('  Recreated configuration file')
         return
 
 def getConfig():
@@ -162,24 +183,39 @@ def getConfig():
 def editConfigEntry(args):
     config = readFromConfig()
     if args[2] in config:
-        print('  Enter new name for the element [' + args[2] + ']: ', end='')
+        for el in config.get(args[2]):
+            servName = el['name']
+            servServer = el['server']
+            servLogin = el['login']
+            servPort = el['port']
+        print('  Enter new name for the element [' + servName + ']: ', end='')
         newName = input()
-        newName = newName or args[2]
-        print('  Enter new server for the element [none]: ', end='')
+        newName = newName or servName
+        print('  Enter new server for the element [' + servServer + ']: ', end='')
         newServer = input()
-        newServer = newServer or ''
+        newServer = newServer or servServer
+        print('  Enter new login for the element [' + servLogin + ']: ', end='')
+        newLogin = input()
+        newLogin = newLogin or servLogin
+        print('  Enter new port for the element [' + servPort + ']: ', end='')
+        newPort = input()
+        newPort = newPort or servPort
         config.pop(args[2], None)
-        config[newName] = [{"name": newName, "server": newServer}]
+        config[newName] = [{"name": newName, "server": newServer, "login":newLogin, "port":newPort}]
         with open(os.path.join(os.path.expanduser('~'), '.config', 'noodle', 'noodle.json'), 'w') as data_file:
             json.dump(config, data_file)
         print('  Edited the entry')
+    else:
+        print('  No entry with that name')
 
 def connectToServer(config, args):
     for server in config:
         if server['name'] == args[2]:
-            name = server['server']
-            print('  Trying to resolve SSH Connection to ' + name, end='\n\n  ')
-    spawn_process(parse_program_path('ssh ' + name))
+            serv = server['server']
+            login = server['login']
+            port = server['port']
+            print('  Trying to resolve SSH connection to ' + serv, end='\n\n  ')
+    spawn_process(parse_program_path('ssh' + ' -l ' + login + ' -p ' + port + ' ' + serv))
                 
 def main():
     arguments = getArguments()
@@ -189,5 +225,5 @@ def main():
 if __name__ == '__main__':
     print('\nNoodle ssh manager\n')
     main()
-    print('\nEnd of Noodle output', end='\n\n')
+    print()
     
