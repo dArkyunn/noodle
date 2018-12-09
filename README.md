@@ -12,7 +12,8 @@ Note that you need python3 for noodle to work.
 
 ## Usage
 
-General form: `noodle [option] <arguments>`
+General form: `noodle [option] <arguments>`  
+Arguments inside [ ] are required, arguments inside < > are optional
 
 Options:
 

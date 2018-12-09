@@ -224,6 +224,7 @@ def connectToServer(config, args):
 def printHelp():
     print('  Usage:')
     print('    General form: noodle [option] <arguments>')
+    print('    Arguments inside [ ] are required, arguments inside < > are optional')
     print()
     print('    Options:')
     print('      help, h - no arguments, shows this page')
