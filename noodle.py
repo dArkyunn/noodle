@@ -46,7 +46,7 @@ def writeToConfig():
         server = input()
     print("  Enter login (default 'root'): ", end='')
     login = input()
-    login = server or 'root'
+    login = login or 'root'
     print("  Enter port (default '22'): ", end='')
     port = input()
     port = port or '22'
